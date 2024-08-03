@@ -1,0 +1,284 @@
+/* Global Styles */
+body {
+  margin: 0;
+  font-family: "Roboto", sans-serif;
+  background-color: #1a202c;
+  color: #1a202c;
+}
+
+/* Error Alerts */
+.error-alert {
+  margin-top: 1rem;
+  background-color: #ffcccb;
+  color: #000000;
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #ff7f7f;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.error-alert-icon {
+  margin-right: 0.5rem;
+}
+
+/* Utility classes */
+.flex {
+  display: flex;
+}
+.justify-center {
+  justify-content: center;
+}
+.justify-between {
+  justify-content: space-between;
+}
+.items-center {
+  align-items: center;
+}
+.items-start {
+  align-items: flex-start;
+}
+
+/* Spacing Utility Classes */
+.gap-5 {
+  gap: 1.25rem;
+}
+.px-5 {
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
+.py-5 {
+  padding-top: 1.25rem;
+  padding-bottom: 1.25rem;
+}
+.mt-4 {
+  margin-top: 1rem;
+}
+.mt-3 {
+  margin-top: 0.75rem;
+}
+.mt-32 {
+  margin-top: 8rem;
+}
+.mt-28 {
+  margin-top: 7rem;
+}
+.mb-14 {
+  margin-bottom: 3.5rem;
+}
+
+/* Background Colors */
+.bg-neutral-900 {
+  background-color: #212121;
+}
+.bg-white {
+  background-color: #ffffff;
+}
+
+/* Text Colors */
+.text-white {
+  color: #ffffff;
+}
+.text-black {
+  color: #000000;
+}
+.text-opacity-80 {
+  opacity: 0.8;
+}
+
+/* Typography */
+.leading-7 {
+  line-height: 1.75rem;
+}
+.text-lg {
+  font-size: 1.125rem;
+}
+.font-medium {
+  font-weight: 500;
+}
+
+/* Misc Colors and Styles */
+.bg-slate-500 {
+  background-color: #6b7280;
+}
+.bg-opacity-50 {
+  opacity: 0.5;
+}
+.rounded-[100px] {
+  border-radius: 100px;
+}
+.shrink-0 {
+  flex-shrink: 0;
+}
+.aspect-square {
+  aspect-ratio: 1 / 1;
+}
+.w-7 {
+  width: 1.75rem;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .max-md\\:flex-wrap {
+    flex-wrap: wrap;
+  }
+  .max-md\\:pl-5 {
+    padding-left: 1.25rem;
+  }
+  .max-md\\:px-5 {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+  .max-md\\:mt-10 {
+    margin-top: 2.5rem;
+  }
+  .max-md\\:w-full {
+    width: 100%;
+  }
+  .max-md\\:text-4xl {
+    font-size: 2.25rem;
+  }
+  .max-md\\:leading-7 {
+    line-height: 1.75rem;
+  }
+}
+
+/* Main Container */
+.main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Bulk Transfer Component Styles */
+.bulk-transfer-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1rem;
+  border: 1px solid white;
+  border-radius: 8px;
+  background-color: #2a2a2a;
+  color: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.bulk-transfer-inner-container {
+  padding: 1rem;
+}
+
+.bulk-transfer-heading {
+  font-size: 2rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.bulk-transfer-form-control {
+  margin-bottom: 1rem;
+}
+
+.confirm-dialog {
+  background-color: #1a202c;
+  color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  margin: 20px auto;
+  text-align: center;
+}
+
+.confirm-dialog p {
+  margin-bottom: 20px;
+}
+
+.monaco-editor-wrapper {
+  border: 1px solid white;
+  border-radius: 8px;
+  background-color: #1e1e1e;
+  padding: 1rem;
+}
+
+.invalidLine {
+  color: red !important;
+}
+
+.monaco-editor .validLine {
+  background-color: rgba(0, 255, 0, 0.3) !important;
+}
+
+.monaco-editor .errorGlyphMargin {
+  background-color: red !important;
+}
+
+.monaco-editor .validGlyphMargin {
+  background-color: green !important;
+}
+
+.monaco-editor .margin {
+  background-color: transparent !important;
+}
+
+.monaco-editor .glyph-margin {
+  width: 20px !important;
+}
+
+.monaco-editor .scroll-decoration {
+  background-color: transparent !important;
+}
+
+/* Custom Button Styles */
+.custom-button {
+  color: white;
+  background-color: #319795;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: center;
+  width: 100%;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.custom-button:hover {
+  background-color: #2c7a7b;
+}
+
+.custom-button:disabled {
+  background-color: #2c7a7b;
+  cursor: not-allowed;
+}
+
+/* Dropdown Styles */
+.dropdown {
+  position: absolute;
+  background-color: white;
+  color: black;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-top: 0.5rem;
+  width: 100%;
+  z-index: 10;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.dropdown-item {
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background-color: #e2e8f0;
+}
+
+/* Fixing example dropdown styles */
+.menu-list {
+  width: auto;
+  min-width: fit-content;
+}
+
+.menu-item {
+  white-space: nowrap;
+}
