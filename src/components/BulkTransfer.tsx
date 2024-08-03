@@ -12,31 +12,24 @@ import {
   AlertIcon,
   InputGroup,
   InputRightElement,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton,
-  useDisclosure,
   Menu,
   MenuButton,
   MenuList,
   MenuItem,
   useToast,
 } from '@chakra-ui/react';
-import { ethers } from 'ethers';
-import { FaFileAlt, FaFileUpload, FaSearch, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { ethers, BrowserProvider } from 'ethers';
+import { FaFileAlt, FaFileUpload, FaSearch, FaChevronDown } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
 import { Editor, useMonaco } from '@monaco-editor/react';
 import ERC20ABI from '../ERC20ABI.json';
 import BulkTransferABI from '../BulkTransferABI.json';
+import { useWeb3ModalProvider } from '@web3modal/ethers/react';
 
 const isEthereumAddress = (address) => /^0x[a-fA-F0-9]{40}$/.test(address);
 const isDecimal = (amount) => !isNaN(parseFloat(amount)) && isFinite(amount);
 
-const BulkTransfer = ({ signer }) => {
+const BulkTransfer = ({ signer, setSigner }) => {
   const [tokenAddress, setTokenAddress] = useState('');
   const [recipientsAndAmounts, setRecipientsAndAmounts] = useState('');
   const [message, setMessage] = useState('');
@@ -50,10 +43,10 @@ const BulkTransfer = ({ signer }) => {
   const editorRef = useRef(null);
   const monacoRef = useRef(null);
   const contractAddress = "0xea7a481d4f8e19bc787825417571f9397483f38b";
-  const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
   const monaco = useMonaco();
   const debounceTimeoutRef = useRef(null);
+  const { walletProvider } = useWeb3ModalProvider();
 
   useEffect(() => {
     if (monaco) {
@@ -71,19 +64,29 @@ const BulkTransfer = ({ signer }) => {
     }
   }, [monaco]);
 
-  useEffect(() => {
-    if (signer) {
-      const contractInstance = new ethers.Contract(contractAddress, BulkTransferABI, signer);
-      setContract(contractInstance);
+  const checkWalletConnection = async () => {
+    if (walletProvider) {
+      try {
+        const provider = new BrowserProvider(walletProvider);
+        const signer = await provider.getSigner();
+        setSigner(signer);
 
-      // Fetch ETH balance
-      signer.getBalance().then(balance => {
-        const balanceInEth = ethers.utils.formatEther(balance);
+        const contractInstance = new ethers.Contract(contractAddress, BulkTransferABI, signer);
+        setContract(contractInstance);
+
+        const balance = await provider.getBalance(signer.address);
+        const balanceInEth = ethers.formatEther(balance);
         setEthBalance(balanceInEth);
         setTokenOptions(prevOptions => prevOptions.map(option => option.symbol === 'ETH' ? { ...option, balance: balanceInEth } : option));
-      });
+      } catch (err) {
+        console.error('Failed to check wallet connection', err);
+      }
     }
-  }, [signer, contractAddress]);
+  };
+
+  useEffect(() => {
+    checkWalletConnection();
+  }, [walletProvider]);
 
   const fetchTokenDecimals = async (address) => {
     try {
@@ -133,7 +136,6 @@ const BulkTransfer = ({ signer }) => {
     const inputErrors = validateInputs();
     if (inputErrors.length > 0) {
       setErrors(inputErrors);
-      onOpen();
       return;
     }
 
@@ -148,8 +150,8 @@ const BulkTransfer = ({ signer }) => {
       .split('\n')
       .reduce((acc, line) => {
         const [, amount] = line.split(',').map((value) => value.trim());
-        return acc.add(ethers.utils.parseUnits(amount || '0', decimals));
-      }, ethers.BigNumber.from(0));
+        return acc + ethers.parseUnits(amount || '0', decimals);
+      }, BigInt(0));
 
     try {
       const approveTx = await tokenContract.approve(contractAddress, totalAmount);
@@ -166,7 +168,6 @@ const BulkTransfer = ({ signer }) => {
     const inputErrors = validateInputs();
     if (inputErrors.length > 0) {
       setErrors(inputErrors);
-      onOpen();
       return;
     }
 
@@ -183,23 +184,23 @@ const BulkTransfer = ({ signer }) => {
       const [address, amount] = line.split(',').map((value) => value.trim());
       recipients.push(address);
       try {
-        amounts.push(ethers.utils.parseUnits(amount, decimals)); // Convert amounts to BigNumber
+        amounts.push(ethers.parseUnits(amount, decimals)); // Convert amounts to BigInt
       } catch (error) {
         console.error(`Error parsing amount at line ${index + 1}: ${amount}`, error);
       }
     });
 
-    const totalAmount = amounts.reduce((acc, amount) => acc.add(amount), ethers.BigNumber.from(0));
-    const totalFee = ethers.utils.parseEther('0.01'); // 0.01 ETH fee per batch
+    const totalAmount = amounts.reduce((acc, amount) => acc + amount, BigInt(0));
+    const totalFee = ethers.parseEther('0.01'); // 0.01 ETH fee per batch
     const totalBatches = Math.ceil(recipients.length / 200); // Ensure batch size is set to 200
     const totalValue = tokenAddress === 'native' 
-      ? totalFee.mul(totalBatches).add(totalAmount) 
-      : totalFee.mul(totalBatches); // Total value for ETH
+      ? totalFee * BigInt(totalBatches) + totalAmount 
+      : totalFee * BigInt(totalBatches); // Total value for ETH
 
     console.log('Sending transaction with values:', {
       recipients,
       amounts,
-      tokenAddress: tokenAddress === 'native' ? ethers.constants.AddressZero : tokenAddress,
+      tokenAddress: tokenAddress === 'native' ? ethers.ZeroAddress : tokenAddress,
       totalValue: totalValue.toString(),
       totalAmount: totalAmount.toString(),
       totalFee: totalFee.toString(),
@@ -209,10 +210,10 @@ const BulkTransfer = ({ signer }) => {
       const tx = await contract.startBatch(
         recipients,
         amounts,
-        tokenAddress === 'native' ? ethers.constants.AddressZero : tokenAddress,
+        tokenAddress === 'native' ? ethers.ZeroAddress : tokenAddress,
         {
           value: totalValue,
-          gasLimit: ethers.utils.hexlify(1000000 * totalBatches) // Adjust gas limit for multiple batches
+          gasLimit: ethers.hexlify(1000000 * totalBatches) // Adjust gas limit for multiple batches
         }
       );
       await tx.wait();
@@ -231,7 +232,7 @@ const BulkTransfer = ({ signer }) => {
 
     try {
       const tx = await contract.processNextBatch({
-        gasLimit: ethers.utils.hexlify(300000), // Adjust gas limit as needed
+        gasLimit: ethers.hexlify(300000), // Adjust gas limit as needed
       });
       await tx.wait();
       setMessage('Batch processed successfully');
@@ -322,11 +323,33 @@ const BulkTransfer = ({ signer }) => {
       .join('\n');
     setRecipientsAndAmounts(validRecords);
     setErrors([]);
-    onClose();
   };
 
-  const handleHighlightInvalidRecords = () => {
-    onClose();
+  const handleHighlightInvalidRecords = () => {};
+
+  const connectWallet = async () => {
+    try {
+      const provider = new BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const account = await signer.getAddress();
+      setSigner(signer);
+      toast({
+        title: 'Wallet connected',
+        description: `Connected account: ${account}`,
+        status: 'success',
+        duration: 5000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error('Failed to connect wallet', error);
+      toast({
+        title: 'Connection failed',
+        description: 'Failed to connect wallet. Please try again.',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
   };
 
   return (
@@ -374,7 +397,7 @@ const BulkTransfer = ({ signer }) => {
           <FormLabel>List of Addresses in CSV</FormLabel>
           <HStack justifyContent="space-between" mb={2}>
             <Menu>
-              <MenuButton as={Button} rightIcon={isOpen ? <FaChevronUp /> : <FaChevronDown />}>
+              <MenuButton as={Button} rightIcon={<FaChevronDown />}>
                 Examples
               </MenuButton>
               <MenuList className="menu-list">
@@ -415,14 +438,20 @@ const BulkTransfer = ({ signer }) => {
             />
           </Box>
         </FormControl>
-        <Button
-          className="custom-button"
-          variant="custom"
-          onClick={isApproved || tokenAddress === 'native' ? handleSendBulk : approveToken}
-          isDisabled={!tokenAddress || recipientsAndAmounts.trim().length === 0}
-        >
-          {isApproved || tokenAddress === 'native' ? 'Send' : 'Approve Token'}
-        </Button>
+        {signer ? (
+          <Button
+            className="custom-button"
+            variant="custom"
+            onClick={isApproved || tokenAddress === 'native' ? handleSendBulk : approveToken}
+            isDisabled={!tokenAddress || recipientsAndAmounts.trim().length === 0}
+          >
+            {isApproved || tokenAddress === 'native' ? 'Send' : 'Approve Token'}
+          </Button>
+        ) : (
+          <Button className="custom-button" variant="custom" onClick={connectWallet}>
+            Connect Wallet
+          </Button>
+        )}
         {message && (
           <Alert status="info" mt={4}>
             <AlertIcon />
@@ -441,24 +470,6 @@ const BulkTransfer = ({ signer }) => {
           </Box>
         )}
       </Box>
-      <Modal isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Invalid Records Detected</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <p>There are <strong>{errors.length}</strong> invalid records. Would you like to remove all invalid records or manually correct them?</p>
-          </ModalBody>
-          <ModalFooter>
-            <Button colorScheme="red" mr={3} onClick={handleRemoveInvalidRecords}>
-              Remove All Invalid Records
-            </Button>
-            <Button variant="ghost" onClick={handleHighlightInvalidRecords}>
-              Highlight Invalid Records
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
     </Box>
   );
 };

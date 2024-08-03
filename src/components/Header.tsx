@@ -1,16 +1,18 @@
-// src/components/Header.tsx
 import React, { useState, useEffect } from "react";
-import { ethers } from "ethers";
-import { Box, Flex, Link, Text, Spacer, Button } from "@chakra-ui/react";
+import { ethers, BrowserProvider } from "ethers";
+import { Box, Flex, Link, Text, Spacer } from "@chakra-ui/react";
+import { useWeb3ModalProvider, useWeb3ModalError } from '@web3modal/ethers/react';
 
 const Header = ({ setSigner }) => {
   const [address, setAddress] = useState("");
   const [error, setError] = useState("");
+  const { walletProvider } = useWeb3ModalProvider();
+  const { error: modalError } = useWeb3ModalError();
 
   const checkWalletConnection = async () => {
     try {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const signer = provider.getSigner();
+      const provider = new BrowserProvider(walletProvider);
+      const signer = await provider.getSigner();
       const account = await signer.getAddress();
       setAddress(account);
       setSigner(signer);
@@ -20,8 +22,16 @@ const Header = ({ setSigner }) => {
   };
 
   useEffect(() => {
-    checkWalletConnection();
-  }, []);
+    if (walletProvider) {
+      checkWalletConnection();
+    }
+  }, [walletProvider]);
+
+  useEffect(() => {
+    if (modalError) {
+      setError(modalError.message);
+    }
+  }, [modalError]);
 
   return (
     <Box bg="gray.800" px={5} py={3} color="white">
@@ -52,9 +62,6 @@ const Header = ({ setSigner }) => {
           ) : (
             <Text>{error || "Wallet not connected"}</Text>
           )}
-          <Button onClick={checkWalletConnection} ml={2} colorScheme="teal">
-            Check Connection
-          </Button>
           <w3m-button />
         </Flex>
       </Flex>

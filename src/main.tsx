@@ -1,85 +1,105 @@
-// src/main.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom/client";
-import { ChakraProvider } from "@chakra-ui/react"; // Import ChakraProvider
-import { createWeb3Modal, defaultConfig } from "@web3modal/ethers5/react";
+import { ChakraProvider } from "@chakra-ui/react";
+import { createWeb3Modal, defaultConfig, useWeb3ModalProvider, useWeb3ModalError } from '@web3modal/ethers/react';
 import Header from "./components/Header";
 import BulkTransfer from "./components/BulkTransfer";
 import "./styles.css";
 import theme from "./theme";
 import TextBox from "./components/TextBox";
 
-// 1. Get projectId at https://cloud.walletconnect.com
 const projectId = import.meta.env.VITE_PROJECT_ID;
 if (!projectId) throw new Error("Project ID is undefined");
 
-// 2. Set chains
-const mainnet = {
-  chainId: 1,
-  name: "Ethereum",
-  currency: "ETH",
-  explorerUrl: "https://etherscan.io",
-  rpcUrl: "https://cloudflare-eth.com",
-};
+const chains = [
+  {
+    chainId: 1,
+    name: "Ethereum",
+    currency: "ETH",
+    explorerUrl: "https://etherscan.io",
+    rpcUrl: `https://rpc.walletconnect.org/v1/?chainId=eip155:1&projectId=${projectId}`
+  },
+  {
+    chainId: 11155111,
+    name: "Sepolia",
+    currency: "ETH",
+    explorerUrl: "https://sepolia.etherscan.io",
+    rpcUrl: `https://rpc.walletconnect.org/v1/?chainId=eip155:11155111&projectId=${projectId}`
+  },
+  {
+    chainId: 42161,
+    name: "Arbitrum One",
+    currency: "ETH",
+    explorerUrl: "https://arbiscan.io",
+    rpcUrl: `https://rpc.walletconnect.org/v1/?chainId=eip155:42161&projectId=${projectId}`
+  }
+];
 
-const sepolia = {
-  chainId: 11155111,
-  name: "Sepolia",
-  currency: "ETH",
-  explorerUrl: "https://sepolia.etherscan.io",
-  rpcUrl: "https://rpc.sepolia.org",
-};
-
-const arbitrum = {
-  chainId: 42161,
-  name: "Arbitrum One",
-  currency: "ETH",
-  explorerUrl: "https://arbiscan.io",
-  rpcUrl: "https://arb1.arbitrum.io/rpc",
-};
-
-// 3. Create a metadata object
 const metadata = {
   name: "My Website",
   description: "My Website description",
-  url: "https://mywebsite.com", // origin must match your domain & subdomain
-  icons: ["https://avatars.mywebsite.com/"],
+  url: "https://mywebsite.com",
+  icons: ["https://avatars.mywebsite.com/"]
 };
 
-// 4. Create Ethers config
 const ethersConfig = defaultConfig({
-  /*Required*/
   metadata,
-
-  /*Optional*/
-  enableEIP6963: true, // true by default
-  enableInjected: true, // true by default
-  enableCoinbase: true, // true by default
-  rpcUrl: "...", // used for the Coinbase SDK
-  defaultChainId: 1, // used for the Coinbase SDK
+  enableEIP6963: true,
+  enableInjected: true,
+  enableCoinbase: true,
+  rpcUrl: "...",
+  defaultChainId: 1
 });
 
-// 5. Create a Web3Modal instance
 createWeb3Modal({
   ethersConfig,
-  chains: [mainnet, sepolia, arbitrum],
+  chains,
   projectId,
-  enableAnalytics: true, // Optional - defaults to your Cloud configuration
+  enableAnalytics: true,
+  themeMode: 'light',
+  themeVariables: {
+    '--w3m-font-family': '"Roboto", sans-serif',
+    '--w3m-accent': '#319795',
+    '--w3m-color-mix': '#00BB7F',
+    '--w3m-color-mix-strength': 40,
+    '--w3m-font-size-master': '16px',
+    '--w3m-border-radius-master': '8px',
+    '--w3m-z-index': 1000
+  }
 });
 
 const App = () => {
   const [signer, setSigner] = useState(null);
+  const { walletProvider } = useWeb3ModalProvider();
+  const { error } = useWeb3ModalError();
+
+  const checkWalletConnection = async () => {
+    if (walletProvider) {
+      try {
+        const provider = new BrowserProvider(walletProvider);
+        const signer = await provider.getSigner();
+        setSigner(signer);
+      } catch (err) {
+        console.error('Failed to check wallet connection', err);
+      }
+    }
+  };
+
+  useEffect(() => {
+    checkWalletConnection();
+  }, [walletProvider]);
+
+  useEffect(() => {
+    if (error) {
+      console.error('Web3Modal Error:', error.message);
+    }
+  }, [error]);
 
   return (
-    <ChakraProvider theme={theme}> {/* Wrap your application with ChakraProvider */}
+    <ChakraProvider theme={theme}>
       <div className="centered-div">
-        <Header setSigner={setSigner} />
-        {signer && (
-          <>
-            <TextBox />
-            <BulkTransfer signer={signer} />
-          </>
-        )}
+        <Header setSigner={setSigner} signer={signer} />
+        <BulkTransfer signer={signer} setSigner={setSigner} />
       </div>
     </ChakraProvider>
   );
