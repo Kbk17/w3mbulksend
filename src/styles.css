@@ -1,9 +1,157 @@
-/* Global Styles */
 body {
   margin: 0;
   font-family: "Roboto", sans-serif;
   background-color: #1a202c;
-  color: #1a202c;
+  color: #ffffff;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 100vh;
+}
+
+.centered-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.bulk-transfer-container {
+  width: 600px;
+  margin: 0 auto;
+  padding: 1rem;
+  border: 1px solid white;
+  border-radius: 8px;
+  background-color: #2a2a2a;
+  color: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.bulk-transfer-inner-container {
+  padding: 1rem;
+}
+
+.bulk-transfer-heading {
+  font-size: 2rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.bulk-transfer-form-control {
+  margin-bottom: 1rem;
+}
+
+.confirm-dialog {
+  background-color: #1a202c;
+  color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  margin: 20px auto;
+  text-align: center;
+}
+
+.confirm-dialog p {
+  margin-bottom: 20px;
+}
+
+.monaco-editor-wrapper {
+  border: 1px solid white;
+  border-radius: 8px;
+  background-color: #1e1e1e;
+  padding: 1rem;
+}
+
+.invalidLine {
+  color: red !important;
+}
+
+.monaco-editor .validLine {
+  background-color: rgba(0, 255, 0, 0.3) !important;
+}
+
+.monaco-editor .errorGlyphMargin {
+  background-color: red !important;
+}
+
+.monaco-editor .validGlyphMargin {
+  background-color: green !important;
+}
+
+.monaco-editor .margin {
+  background-color: transparent !important;
+}
+
+.monaco-editor .glyph-margin {
+  width: 20px !important;
+}
+
+.monaco-editor .scroll-decoration {
+  background-color: transparent !important;
+}
+
+/* Custom Button Styles */
+.custom-button {
+  color: white;
+  background-color: #319795;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: center;
+  width: 100%;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.custom-button:hover {
+  background-color: #2c7a7b;
+}
+
+.custom-button:disabled {
+  background-color: #2c7a7b;
+  cursor: not-allowed;
+}
+
+/* Dropdown Styles */
+.dropdown {
+  position: absolute;
+  background-color: white;
+  color: black;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-top: 0.5rem;
+  width: 100%;
+  z-index: 10;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.dropdown-item {
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background-color: #e2e8f0;
+}
+
+/* Fixing example dropdown styles */
+.menu-list {
+  width: auto;
+  min-width: fit-content;
+}
+
+.menu-item {
+  white-space: nowrap;
 }
 
 /* Error Alerts */
@@ -142,143 +290,4 @@ body {
   .max-md\\:leading-7 {
     line-height: 1.75rem;
   }
-}
-
-/* Main Container */
-.main {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-/* Bulk Transfer Component Styles */
-.bulk-transfer-container {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 1rem;
-  border: 1px solid white;
-  border-radius: 8px;
-  background-color: #2a2a2a;
-  color: white;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.bulk-transfer-inner-container {
-  padding: 1rem;
-}
-
-.bulk-transfer-heading {
-  font-size: 2rem;
-  text-align: center;
-  margin-bottom: 1rem;
-}
-
-.bulk-transfer-form-control {
-  margin-bottom: 1rem;
-}
-
-.confirm-dialog {
-  background-color: #1a202c;
-  color: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  max-width: 400px;
-  margin: 20px auto;
-  text-align: center;
-}
-
-.confirm-dialog p {
-  margin-bottom: 20px;
-}
-
-.monaco-editor-wrapper {
-  border: 1px solid white;
-  border-radius: 8px;
-  background-color: #1e1e1e;
-  padding: 1rem;
-}
-
-.invalidLine {
-  color: red !important;
-}
-
-.monaco-editor .validLine {
-  background-color: rgba(0, 255, 0, 0.3) !important;
-}
-
-.monaco-editor .errorGlyphMargin {
-  background-color: red !important;
-}
-
-.monaco-editor .validGlyphMargin {
-  background-color: green !important;
-}
-
-.monaco-editor .margin {
-  background-color: transparent !important;
-}
-
-.monaco-editor .glyph-margin {
-  width: 20px !important;
-}
-
-.monaco-editor .scroll-decoration {
-  background-color: transparent !important;
-}
-
-/* Custom Button Styles */
-.custom-button {
-  color: white;
-  background-color: #319795;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  cursor: pointer;
-  text-align: center;
-  width: 100%;
-  font-size: 1rem;
-  transition: background-color 0.3s ease;
-}
-
-.custom-button:hover {
-  background-color: #2c7a7b;
-}
-
-.custom-button:disabled {
-  background-color: #2c7a7b;
-  cursor: not-allowed;
-}
-
-/* Dropdown Styles */
-.dropdown {
-  position: absolute;
-  background-color: white;
-  color: black;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  margin-top: 0.5rem;
-  width: 100%;
-  z-index: 10;
-  max-height: 200px;
-  overflow-y: auto;
-}
-
-.dropdown-item {
-  padding: 0.5rem;
-  cursor: pointer;
-}
-
-.dropdown-item:hover {
-  background-color: #e2e8f0;
-}
-
-/* Fixing example dropdown styles */
-.menu-list {
-  width: auto;
-  min-width: fit-content;
-}
-
-.menu-item {
-  white-space: nowrap;
 }

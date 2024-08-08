@@ -23,7 +23,7 @@ import { FaFileAlt, FaFileUpload, FaSearch, FaChevronDown } from 'react-icons/fa
 import * as XLSX from 'xlsx';
 import { Editor, useMonaco } from '@monaco-editor/react';
 import ERC20ABI from '../ERC20ABI.json';
-import BulkTransferABI from '../BulkTransferABI.json';
+import BulkTransferABI from '../BulkTransferABI.json'; // Zaktualizowane ABI
 import { useWeb3ModalProvider } from '@web3modal/ethers/react';
 
 const isEthereumAddress = (address) => /^0x[a-fA-F0-9]{40}$/.test(address);
@@ -42,7 +42,7 @@ const BulkTransfer = ({ signer, setSigner }) => {
   const [ethBalance, setEthBalance] = useState('0');
   const editorRef = useRef(null);
   const monacoRef = useRef(null);
-  const contractAddress = "0xea7a481d4f8e19bc787825417571f9397483f38b";
+  const contractAddress = "0x102Ba7498e760A0B41DE09d933d93e05eB237C17";
   const toast = useToast();
   const monaco = useMonaco();
   const debounceTimeoutRef = useRef(null);
@@ -165,21 +165,24 @@ const BulkTransfer = ({ signer, setSigner }) => {
   };
 
   const handleSendBulk = async () => {
+    console.log('handleSendBulk called');
+    console.log('tokenAddress:', tokenAddress); // Debugging log
+  
     const inputErrors = validateInputs();
     if (inputErrors.length > 0) {
       setErrors(inputErrors);
       return;
     }
-
+  
     if (!contract) {
       setMessage('Contract is not loaded');
       return;
     }
-
+  
     const lines = recipientsAndAmounts.trim().split('\n');
     const recipients = [];
-    const amounts = [];
-
+    const amounts = []; // BigInt array
+  
     lines.forEach((line, index) => {
       const [address, amount] = line.split(',').map((value) => value.trim());
       recipients.push(address);
@@ -189,56 +192,43 @@ const BulkTransfer = ({ signer, setSigner }) => {
         console.error(`Error parsing amount at line ${index + 1}: ${amount}`, error);
       }
     });
-
-    const totalAmount = amounts.reduce((acc, amount) => acc + amount, BigInt(0));
-    const totalFee = ethers.parseEther('0.01'); // 0.01 ETH fee per batch
-    const totalBatches = Math.ceil(recipients.length / 200); // Ensure batch size is set to 200
-    const totalValue = tokenAddress === 'native' 
-      ? totalFee * BigInt(totalBatches) + totalAmount 
-      : totalFee * BigInt(totalBatches); // Total value for ETH
-
-    console.log('Sending transaction with values:', {
-      recipients,
-      amounts,
-      tokenAddress: tokenAddress === 'native' ? ethers.ZeroAddress : tokenAddress,
-      totalValue: totalValue.toString(),
-      totalAmount: totalAmount.toString(),
-      totalFee: totalFee.toString(),
-    });
-
+  
+    const totalFee = ethers.parseEther('0.0001'); // Adjusted batch fee
+    const totalAmount = amounts.reduce((acc, amount) => acc + amount, 0n);
+    const isNative = tokenAddress === 'native';
+    const totalValue = isNative ? totalFee + totalAmount : totalFee; // Total value for ETH (totalAmount for native, only totalFee for ERC20)
+  
+    // Corrected line to choose the zero address for native tokens or the specified token address for ERC20 tokens
+    const selectedTokenAddress = isNative ? ethers.ZeroAddress : tokenAddress;
+  
+    // Logging local data before sending the transaction
+    console.log('Local - Recipients:', recipients);
+    console.log('Local - Amounts:', amounts.map(a => a.toString()));
+    console.log('Local - Total Fee:', totalFee.toString());
+    console.log('Local - Total Amount:', totalAmount.toString());
+    console.log('Local - Is Native:', isNative);
+    console.log('Local - Total Value:', totalValue.toString());
+    console.log('Local - Selected Token Address:', selectedTokenAddress); // Ensure token address is correct
+  
     try {
-      const tx = await contract.startBatch(
+      const gasLimit = 3000000; // Set a fixed gas limit of 3,000,000
+  
+      const tx = await contract.bulkSend(
         recipients,
         amounts,
-        tokenAddress === 'native' ? ethers.ZeroAddress : tokenAddress,
+        selectedTokenAddress,
         {
           value: totalValue,
-          gasLimit: ethers.hexlify(1000000 * totalBatches) // Adjust gas limit for multiple batches
+          gasLimit,
         }
       );
+      console.log('Local - Transaction sent:', tx);
       await tx.wait();
+      console.log('Block - Transaction mined:', tx);
       setMessage('Transaction successful');
-
-      // Start processing batches
-      await processBatches();
     } catch (error) {
-      console.error('Transaction failed:', error);
+      console.error('Block - Transaction failed:', error);
       setMessage(`Transaction failed: ${error.message}`);
-    }
-  };
-
-  const processBatches = async () => {
-    if (!contract) return;
-
-    try {
-      const tx = await contract.processNextBatch({
-        gasLimit: ethers.hexlify(300000), // Adjust gas limit as needed
-      });
-      await tx.wait();
-      setMessage('Batch processed successfully');
-    } catch (error) {
-      console.error('Batch processing failed:', error);
-      setMessage(`Batch processing failed: ${error.message}`);
     }
   };
 
