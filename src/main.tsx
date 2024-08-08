@@ -8,61 +8,18 @@ import BulkTransfer from "./components/BulkTransfer";
 import BannerBox from "./components/BannerBox";
 import "./styles.css";
 import theme from "./theme";
+import networks from "./config/networks";
 
 const projectId = import.meta.env.VITE_PROJECT_ID;
 if (!projectId) throw new Error("Project ID is undefined");
 
-const chains = [
-  {
-    chainId: 1,
-    name: "Ethereum",
-    currency: "ETH",
-    explorerUrl: "https://etherscan.io",
-    rpcUrl: `https://rpc.walletconnect.org/v1/?chainId=eip155:1&projectId=${projectId}`
-  },
-  {
-    chainId: 11155111,
-    name: "Sepolia",
-    currency: "ETH",
-    explorerUrl: "https://sepolia.etherscan.io",
-    rpcUrl: `https://rpc.walletconnect.org/v1/?chainId=eip155:11155111&projectId=${projectId}`
-  },
-  {
-    chainId: 42161,
-    name: "Arbitrum One",
-    currency: "ETH",
-    explorerUrl: "https://arbiscan.io",
-    rpcUrl: `https://rpc.walletconnect.org/v1/?chainId=eip155:42161&projectId=${projectId}`
-  },
-  {
-    chainId: 43114,
-    name: "Avalanche",
-    currency: "AVAX",
-    explorerUrl: "https://cchain.explorer.avax.network",
-    rpcUrl: `https://rpc.walletconnect.org/v1/?chainId=eip155:43114&projectId=${projectId}`
-  },
-  {
-    chainId: 42220,
-    name: "Celo",
-    currency: "CELO",
-    explorerUrl: "https://explorer.celo.org",
-    rpcUrl: `https://rpc.walletconnect.org/v1/?chainId=eip155:42220&projectId=${projectId}`
-  },
-  {
-    chainId: 421614,
-    name: "Arbitrum Sepolia",
-    currency: "ETH",
-    explorerUrl: "https://sepolia.arbiscan.io",
-    rpcUrl: `https://arb-sepolia.g.alchemy.com/v2/CgaowP7GettwbihFFjoo-y4X_huDxNoF`
-  },
-  {
-    chainId: 250,
-    name: "Fantom",
-    currency: "FTM",
-    explorerUrl: "https://ftmscan.com",
-    rpcUrl: `https://rpc.walletconnect.org/v1/?chainId=eip155:250&projectId=${projectId}`
-  }
-];
+const chains = Object.keys(networks).map((chainId) => ({
+  chainId: parseInt(chainId, 10),
+  name: networks[chainId].name,
+  currency: networks[chainId].currency,
+  explorerUrl: networks[chainId].explorerUrl,
+  rpcUrl: networks[chainId].rpcUrl(projectId)
+}));
 
 const metadata = {
   name: "My Website",
@@ -76,7 +33,7 @@ const ethersConfig = defaultConfig({
   enableEIP6963: true,
   enableInjected: true,
   enableCoinbase: true,
-  rpcUrl: "...",
+  rpcUrl: networks[1].rpcUrl(projectId), // domyślny rpcUrl dla sieci Ethereum
   defaultChainId: 1
 });
 

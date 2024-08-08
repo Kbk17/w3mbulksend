@@ -25,6 +25,7 @@ import { Editor, useMonaco } from '@monaco-editor/react';
 import ERC20ABI from '../ERC20ABI.json';
 import BulkTransferABI from '../BulkTransferABI.json'; // Zaktualizowane ABI
 import { useWeb3ModalProvider } from '@web3modal/ethers/react';
+import { contractAddresses } from '../config/contracts';
 
 const isEthereumAddress = (address) => /^0x[a-fA-F0-9]{40}$/.test(address);
 const isDecimal = (amount) => !isNaN(parseFloat(amount)) && isFinite(amount);
@@ -42,7 +43,7 @@ const BulkTransfer = ({ signer, setSigner }) => {
   const [ethBalance, setEthBalance] = useState('0');
   const editorRef = useRef(null);
   const monacoRef = useRef(null);
-  const contractAddress = "0x102Ba7498e760A0B41DE09d933d93e05eB237C17";
+  const [currentChainId, setCurrentChainId] = useState(1); // Domyślna sieć
   const toast = useToast();
   const monaco = useMonaco();
   const debounceTimeoutRef = useRef(null);
@@ -71,7 +72,10 @@ const BulkTransfer = ({ signer, setSigner }) => {
         const signer = await provider.getSigner();
         setSigner(signer);
 
-        const contractInstance = new ethers.Contract(contractAddress, BulkTransferABI, signer);
+        const network = await provider.getNetwork();
+        setCurrentChainId(network.chainId); // Ustaw aktualny chainId
+
+        const contractInstance = new ethers.Contract(contractAddresses[network.chainId], BulkTransferABI, signer);
         setContract(contractInstance);
 
         const balance = await provider.getBalance(signer.address);
@@ -154,7 +158,7 @@ const BulkTransfer = ({ signer, setSigner }) => {
       }, BigInt(0));
 
     try {
-      const approveTx = await tokenContract.approve(contractAddress, totalAmount);
+      const approveTx = await tokenContract.approve(contractAddresses[currentChainId], totalAmount);
       await approveTx.wait();
       setIsApproved(true);
       setMessage('Token approved successfully. You can now send the transaction.');
