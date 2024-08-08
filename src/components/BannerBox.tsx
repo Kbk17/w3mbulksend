@@ -23,11 +23,12 @@ const BannerBox: React.FC = () => {
   return (
     <Box textAlign="center" py={10} mb={2} width="100%">
       <Box maxWidth="600px" mx="auto">
-        <Heading as="h1" size="2xl" mb={4}>
-          Our Amazing Services
+        <Heading as="h2" size="2xl" mb={4}>
+        Send Multiple Transactions at Once!
         </Heading>
-        <Text fontSize="lg" mb={4}>
-          Discover our range of services designed to help you succeed!
+        <Text fontSize="md" mb={4}>
+        Enjoy cost-effective blockchain bulk transactions. Ideal for airdrops, payrolls, etc.<br></br>
+        Simplify your process, save time and cash with Send Tokens dApp.
         </Text>
       </Box>
       <Box

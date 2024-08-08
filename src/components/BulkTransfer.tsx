@@ -215,7 +215,7 @@ const BulkTransfer = ({ signer, setSigner }) => {
     console.log('Local - Selected Token Address:', selectedTokenAddress); // Ensure token address is correct
   
     try {
-      const gasLimit = 3000000; // Set a fixed gas limit of 3,000,000
+      const gasLimit = 7000000; // Set a fixed gas limit of 3,000,000
   
       const tx = await contract.bulkSend(
         recipients,
@@ -297,6 +297,7 @@ const BulkTransfer = ({ signer, setSigner }) => {
 
   const handleEditorDidMount = (editor, monaco) => {
     editorRef.current = editor;
+    editorRef.current.defaultValue = "lol";
     monacoRef.current = { editor, monaco };
     monaco.editor.setTheme('vs-dark');
 
@@ -349,9 +350,6 @@ const BulkTransfer = ({ signer, setSigner }) => {
   return (
     <Box className="bulk-transfer-container">
       <Box className="bulk-transfer-inner-container">
-        <Heading className="bulk-transfer-heading">
-          Bulk Transfer
-        </Heading>
         <FormControl className="bulk-transfer-form-control">
           <FormLabel>Select or Enter Token Address</FormLabel>
           <InputGroup>
@@ -388,7 +386,7 @@ const BulkTransfer = ({ signer, setSigner }) => {
           )}
         </FormControl>
         <FormControl className="bulk-transfer-form-control">
-          <FormLabel>List of Addresses in CSV</FormLabel>
+          <FormLabel>List of Addresses and Amounts</FormLabel>
           <HStack justifyContent="space-between" mb={2}>
             <Menu>
               <MenuButton as={Button} rightIcon={<FaChevronDown />}>
@@ -415,15 +413,16 @@ const BulkTransfer = ({ signer, setSigner }) => {
           </HStack>
           <Box className="monaco-editor-wrapper">
             <Editor
-              height="300px"
+              height="200px"
               language="ethereumData"
               theme="vs-dark"
+              defaultValue="Enter each line: address, amount"
               value={recipientsAndAmounts}
               onChange={handleEditorChange}
               options={{
                 lineNumbers: 'on',
                 minimap: { enabled: false },
-                fontSize: 14,
+                fontSize: 12,
                 suggestOnTriggerCharacters: false,
                 quickSuggestions: false,
               }}
